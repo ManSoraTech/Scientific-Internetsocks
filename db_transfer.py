@@ -134,22 +134,17 @@ class DbTransfer(object):
         result2 = port in ServerPool.get_instance().tcp_ipv6_servers_pool
         if result2:
             config = ServerPool.get_instance().tcp_ipv6_servers_pool[port]._config
-            result2 = result1 and config['password'] != common.to_bytes(row['sspwd'])
+            result2 = not result2 or config['password'] != common.to_bytes(row['sspwd'])
             if enable_custom_method:
-                result2 = result2 and config['method'] != common.to_bytes(row['method']) \
-                          and config['protocol'] != common.to_bytes(row['protocol']) \
-                          and config['obfs'] != common.to_bytes(row['obfs'])
+                result2 = result2 or config['method'] != common.to_bytes(row['method']) \
+                          or config['protocol'] != common.to_bytes(row['protocol']) \
+                          or config['obfs'] != common.to_bytes(row['obfs'])
 
         return result1 or result2
 
     @staticmethod
     def del_server_out_of_bound_safe(last_rows, rows):
         enable_custom_method = DbTransfer.get_instance().enable_custom_method
-        port = 5002
-        passwd = u'IqESHb73'
-        method = u'chacha20'
-        # ServerPool.get_instance().new_server2(port, passwd, method)
-        # return
         # 停止超流量的服务
         # 启动没超流量的服务
         # 需要动态载入switchrule，以便实时修改规则
@@ -168,7 +163,6 @@ class DbTransfer(object):
                 allow = False
 
             port = row['port']
-            passwd = common.to_bytes(row['sspwd'])
             plan = row['plan']
 
             if port not in cur_servers:
@@ -183,7 +177,7 @@ class DbTransfer(object):
                     ServerPool.get_instance().cb_del_server(port)
                 elif DbTransfer.method_is_changed(enable_custom_method, port, row):
                     # password changed
-                    logging.info('db stop server at port [%s] reason: password changed' % (port,))
+                    logging.info('db stop server at port [%s] reason: method changed' % (port,))
                     ServerPool.get_instance().cb_del_server(port)
                     new_servers[port] = row
                 elif Config.PRO_NODE and plan != 'VIP':
@@ -195,7 +189,7 @@ class DbTransfer(object):
                     pass
                 else:
                     # new_servers[port] = passwd
-                    logging.info('db start server at port [%s] pass [%s]' % (port, passwd))
+                    logging.info('db start server at port [%s] pass [%s] method [%s] protocol [%s] obfs [%s]' % (port, row['sspwd'], row['method'], row['protocol'], row['obfs']))
                     ServerPool.get_instance().new_server(enable_custom_method, row)
 
         for row in last_rows:
@@ -210,9 +204,10 @@ class DbTransfer(object):
             DbTransfer.get_instance().event.wait(eventloop.TIMEOUT_PRECISION)
             for port in new_servers.keys():
                 logging.info(plan)
-                passwd = new_servers[port]['sspwd']
-                logging.info('db start server at port [%s] pass [%s]' % (port, passwd))
-                ServerPool.get_instance().new_server(enable_custom_method, row)
+                #passwd = new_servers[port]['sspwd']
+                logging.info('db start server at port [%s] pass [%s] method [%s] protocol [%s] obfs [%s]' % (port, new_servers[port]['sspwd'], new_servers[port]['method'], new_servers[port]['protocol'], new_servers[port]['obfs']))
+                #logging.info('db start server at port [%s] pass [%s]' % (port, passwd))
+                ServerPool.get_instance().new_server(enable_custom_method, new_servers[port])
 
     @staticmethod
     def del_servers():
@@ -236,7 +231,8 @@ class DbTransfer(object):
             while True:
                 reload(Config)
                 try:
-                    # DbTransfer.get_instance().push_db_all_user()
+                    #DbTransfer.get_instance().push_db_all_user()
+                    logging.info('pull_db_all_user')
                     rows = DbTransfer.pull_db_all_user()
                     DbTransfer.del_server_out_of_bound_safe(last_rows, rows)
                     last_rows = rows
