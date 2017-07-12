@@ -53,7 +53,7 @@ EVENT_NAMES = {
 }
 
 # we check timeouts every TIMEOUT_PRECISION seconds
-TIMEOUT_PRECISION = 2
+TIMEOUT_PRECISION = 4
 
 
 class KqueueLoop(object):

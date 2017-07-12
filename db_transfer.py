@@ -189,7 +189,10 @@ class DbTransfer(object):
                     pass
                 else:
                     # new_servers[port] = passwd
-                    logging.info('db start server at port [%s] pass [%s] method [%s] protocol [%s] obfs [%s]' % (port, row['sspwd'], row['method'], row['protocol'], row['obfs']))
+                    if(enable_custom_method):
+                        logging.info('db start server at port [%s] pass [%s] method [%s] protocol [%s] obfs [%s]' % (port, row['sspwd'], row['method'], row['protocol'], row['obfs']))
+                    else:
+                        logging.info('db start server at port [%s] pass [%s]' % (port, row['sspwd']))
                     ServerPool.get_instance().new_server(enable_custom_method, row)
 
         for row in last_rows:
@@ -205,8 +208,10 @@ class DbTransfer(object):
             for port in new_servers.keys():
                 logging.info(plan)
                 #passwd = new_servers[port]['sspwd']
-                logging.info('db start server at port [%s] pass [%s] method [%s] protocol [%s] obfs [%s]' % (port, new_servers[port]['sspwd'], new_servers[port]['method'], new_servers[port]['protocol'], new_servers[port]['obfs']))
-                #logging.info('db start server at port [%s] pass [%s]' % (port, passwd))
+                if (enable_custom_method):
+                    logging.info('db start server at port [%s] pass [%s] method [%s] protocol [%s] obfs [%s]' % (port, row['sspwd'], row['method'], row['protocol'], row['obfs']))
+                else:
+                    logging.info('db start server at port [%s] pass [%s]' % (port, row['sspwd']))  #logging.info('db start server at port [%s] pass [%s]' % (port, passwd))
                 ServerPool.get_instance().new_server(enable_custom_method, new_servers[port])
 
     @staticmethod
