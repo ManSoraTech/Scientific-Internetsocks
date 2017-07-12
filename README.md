@@ -1,9 +1,9 @@
-ShadowsocksR
+Scientific Internetsocks
 ===========
 
 [![Build Status]][Travis CI]
 
-A fast tunnel proxy that helps you bypass firewalls.
+A fast tunnel proxy that helps you bypass net.
 
 Server
 ------
