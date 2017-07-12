@@ -12,6 +12,7 @@ var
 sdist
 develop-eggs
 .installed.cfg
+cymysql/**/*
 
 # Installer logs
 pip-log.txt
@@ -34,3 +35,4 @@ htmlcov
 user-config.json
 userapiconfig.py
 usermysql.json
+Config.py
