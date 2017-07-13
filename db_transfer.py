@@ -236,8 +236,8 @@ class DbTransfer(object):
             while True:
                 reload(Config)
                 try:
-                    #DbTransfer.get_instance().push_db_all_user()
-                    logging.info('pull_db_all_user')
+                    logging.info('sync_db_all_user')
+                    DbTransfer.get_instance().push_db_all_user()
                     rows = DbTransfer.pull_db_all_user()
                     DbTransfer.del_server_out_of_bound_safe(last_rows, rows)
                     last_rows = rows
