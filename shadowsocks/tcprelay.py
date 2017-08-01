@@ -169,7 +169,7 @@ class TCPRelayHandler(object):
         server_info.iv = self._encryptor.cipher_iv
         server_info.recv_iv = b''
         server_info.key_str = common.to_bytes(config['password'])
-        server_info.key = self._encryptor.cipher_key
+        server_info.key = self._encryptor.key
         server_info.head_len = 30
         server_info.tcp_mss = self._tcp_mss
         server_info.buffer_size = self._recv_buffer_size
@@ -188,7 +188,7 @@ class TCPRelayHandler(object):
         server_info.iv = self._encryptor.cipher_iv
         server_info.recv_iv = b''
         server_info.key_str = common.to_bytes(config['password'])
-        server_info.key = self._encryptor.cipher_key
+        server_info.key = self._encryptor.key
         server_info.head_len = 30
         server_info.tcp_mss = self._tcp_mss
         server_info.buffer_size = self._recv_buffer_size
@@ -271,6 +271,7 @@ class TCPRelayHandler(object):
         except Exception:
             self._stage = STAGE_DESTROYED
             logging.error('create encryptor fail at port %d', self._server._listen_port)
+            traceback.print_exc()
 
     def _update_user(self, user):
         self._user = user
@@ -882,7 +883,16 @@ class TCPRelayHandler(object):
                         if not self._protocol.obfs.server_info.recv_iv:
                             iv_len = len(self._protocol.obfs.server_info.iv)
                             self._protocol.obfs.server_info.recv_iv = obfs_decode[0][:iv_len]
-                        data = self._encryptor.decrypt(obfs_decode[0])
+                        try:
+                            data = self._encryptor.decrypt(obfs_decode[0])
+                        except Exception as e:
+                            shell.print_exception(e)
+                            if self._config['verbose']:
+                                traceback.print_exc()
+                            logging.error(
+                                "decrypt data failed, exception from %s:%d" %
+                                (self._client_address[0], self._client_address[1]))
+                            data = [0]
                     else:
                         data = obfs_decode[0]
                     try:
@@ -977,7 +987,15 @@ class TCPRelayHandler(object):
                 if not self._protocol.obfs.server_info.recv_iv:
                     iv_len = len(self._protocol.obfs.server_info.iv)
                     self._protocol.obfs.server_info.recv_iv = obfs_decode[0][:iv_len]
-                data = self._encryptor.decrypt(obfs_decode[0])
+                try:
+                    data = self._encryptor.decrypt(obfs_decode[0])
+                except Exception as e:
+                    shell.print_exception(e)
+                    logging.error(
+                        "decrypt data failed, exception from %s:%d" %
+                        (self._client_address[0], self._client_address[1]))
+                    self.destroy()
+                    return
                 try:
                     data = self._protocol.client_post_decrypt(data)
                     if self._recv_pack_id == 1:
