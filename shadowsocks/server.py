@@ -25,6 +25,7 @@ import signal
 
 if __name__ == '__main__':
     import inspect
+
     file_path = os.path.dirname(os.path.realpath(inspect.getfile(inspect.currentframe())))
     sys.path.insert(0, os.path.join(file_path, '../'))
 
@@ -43,7 +44,8 @@ def main():
 
     try:
         import resource
-        logging.info('current process RLIMIT_NOFILE resource: soft %d hard %d'  % resource.getrlimit(resource.RLIMIT_NOFILE))
+        logging.info(
+            'current process RLIMIT_NOFILE resource: soft %d hard %d' % resource.getrlimit(resource.RLIMIT_NOFILE))
     except ImportError:
         pass
 
@@ -68,7 +70,7 @@ def main():
 
     tcp_servers = []
     udp_servers = []
-    dns_resolver = asyncdns.DNSResolver()
+    dns_resolver = asyncdns.DNSResolver(config['black_hostname_list'])
     if int(config['workers']) > 1:
         stat_counter_dict = None
     else:
