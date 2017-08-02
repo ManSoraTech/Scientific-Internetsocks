@@ -710,7 +710,6 @@ class auth_chain_c(auth_chain_b):
             self.data_size_list0 = []
         random = xorshift128plus()
         random.init_from_bin(key)
-        # 补全数组长为12~24-1
         list_len = random.next() % (8 + 16) + (4 + 8)
         for i in range(0, list_len):
             self.data_size_list0.append((int)(random.next() % 2340 % 2040 % 1440))
@@ -727,8 +726,6 @@ class auth_chain_c(auth_chain_b):
 
     def rnd_data_len(self, buf_size, last_hash, random):
         other_data_size = buf_size + self.server_info.overhead
-        # final_pos 总是分布在pos~(data_size_list0.len-1)之间
-        # 除非data_size_list0中的任何值均过小使其全部都无法容纳buf
         if other_data_size >= self.data_size_list0[-1]:
             if other_data_size >= 1440:
                 return 0
@@ -742,7 +739,6 @@ class auth_chain_c(auth_chain_b):
 
         random.init_from_bin_len(last_hash, buf_size)
         pos = bisect.bisect_left(self.data_size_list0, other_data_size)
-        # random select a size in the leftover data_size_list0
         final_pos = pos + random.next() % (len(self.data_size_list0) - pos)
         return self.data_size_list0[final_pos] - other_data_size
 
@@ -755,9 +751,6 @@ class auth_chain_d(auth_chain_b):
         self.data_size_list0 = []
 
     def check_and_patch_data_size(self, random):
-        # append new item
-        # when the biggest item(first time) or the last append item(other time) are not big enough.
-        # but set a limit size (64) to avoid stack over follow.
         if self.data_size_list0[-1] < 1300 and len(self.data_size_list0) < 64:
             self.data_size_list0.append((int)(random.next() % 2340 % 2040 % 1440))
             self.check_and_patch_data_size(random)
@@ -767,14 +760,12 @@ class auth_chain_d(auth_chain_b):
             self.data_size_list0 = []
         random = xorshift128plus()
         random.init_from_bin(key)
-        # 补全数组长为12~24-1
         list_len = random.next() % (8 + 16) + (4 + 8)
         for i in range(0, list_len):
             self.data_size_list0.append((int)(random.next() % 2340 % 2040 % 1440))
         self.data_size_list0.sort()
         old_len = len(self.data_size_list0)
         self.check_and_patch_data_size(random)
-        # if check_and_patch_data_size are work, re-sort again.
         if old_len != len(self.data_size_list0):
             self.data_size_list0.sort()
 
@@ -789,12 +780,10 @@ class auth_chain_d(auth_chain_b):
 
     def rnd_data_len(self, buf_size, last_hash, random):
         other_data_size = buf_size + self.server_info.overhead
-        # if other_data_size > the bigest item in data_size_list0, not padding any data
         if other_data_size >= self.data_size_list0[-1]:
             return 0
 
         random.init_from_bin_len(last_hash, buf_size)
         pos = bisect.bisect_left(self.data_size_list0, other_data_size)
-        # random select a size in the leftover data_size_list0
         final_pos = pos + random.next() % (len(self.data_size_list0) - pos)
         return self.data_size_list0[final_pos] - other_data_size
