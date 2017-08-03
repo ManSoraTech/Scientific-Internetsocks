@@ -726,6 +726,7 @@ class auth_chain_c(auth_chain_b):
 
     def rnd_data_len(self, buf_size, last_hash, random):
         other_data_size = buf_size + self.server_info.overhead
+        random.init_from_bin_len(last_hash, buf_size)
         if other_data_size >= self.data_size_list0[-1]:
             if other_data_size >= 1440:
                 return 0
@@ -737,7 +738,6 @@ class auth_chain_c(auth_chain_b):
                 return random.next() % 521
             return random.next() % 1021
 
-        random.init_from_bin_len(last_hash, buf_size)
         pos = bisect.bisect_left(self.data_size_list0, other_data_size)
         final_pos = pos + random.next() % (len(self.data_size_list0) - pos)
         return self.data_size_list0[final_pos] - other_data_size
