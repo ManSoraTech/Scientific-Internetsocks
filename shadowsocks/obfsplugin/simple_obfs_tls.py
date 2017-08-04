@@ -152,7 +152,7 @@ class simple_obfs_tls(plain.plain):
         if self.obfs_stage == 1:
             ret = b''
             while len(buf) > 2048:
-                size = 2048
+                size = min(struct.unpack('>H', os.urandom(2))[0] % 4096 + 100, len(buf))
                 ret += b"\x17" + self.tls_version + struct.pack('>H', size) + buf[:size]
                 buf = buf[size:]
             if len(buf) > 0:
@@ -172,16 +172,18 @@ class simple_obfs_tls(plain.plain):
 
         data += b"\x14" + self.tls_version + b"\x00\x01\x01" #ChangeCipherSpec
 
-        data += b"\x16" + self.tls_version + struct.pack('>H', len(buf)) + buf
+        size = min(struct.unpack('>H', os.urandom(2))[0] % 4096 + 100, len(buf))
 
-        # if len(buf) - size > 0:
-        #     buf = buf[size:]
-        #     while len(buf) > 2048:
-        #         size = 2048
-        #         data += b"\x17" + self.tls_version + struct.pack('>H', size) + buf[:size]
-        #         buf = buf[size:]
-        #     if len(buf) > 0:
-        #         data += b"\x17" + self.tls_version + struct.pack('>H', len(buf)) + buf
+        data += b"\x16" + self.tls_version + struct.pack('>H', size) + buf[:size]
+
+        if len(buf) - size > 0:
+            buf = buf[size:]
+            while len(buf) > 2048:
+                size = min(struct.unpack('>H', os.urandom(2))[0] % 4096 + 100, len(buf))
+                data += b"\x17" + self.tls_version + struct.pack('>H', size) + buf[:size]
+                buf = buf[size:]
+            if len(buf) > 0:
+                data += b"\x17" + self.tls_version + struct.pack('>H', len(buf)) + buf
 
         self.obfs_stage += 1
 
@@ -228,6 +230,7 @@ class simple_obfs_tls(plain.plain):
             return (b'', False, False)
 
         self.recv_buffer = self.recv_buffer[header_len + 5:]
+        self.deobfs_stage = 1
         buf = buf[2:header_len + 2]
         if not match_begin(buf, b'\x01\x00'): #client hello
             logging.info("tls_auth not client hello message")
@@ -273,12 +276,12 @@ class simple_obfs_tls(plain.plain):
             logging.info("ext header error")
             return self.decode_error_return(ogn_buf)
 
-        self.deobfs_stage = 1
-
         buf = buf[2:]
         ext_length = struct.unpack('>H', buf[:2])[0]
         buf = buf[2:]
         ret = buf[:ext_length]
+        if len(self.recv_buffer) > 0:
+            ret += self.server_decode(b'')[0]
         buf = buf[ext_length:]
 
         host_name = b''
