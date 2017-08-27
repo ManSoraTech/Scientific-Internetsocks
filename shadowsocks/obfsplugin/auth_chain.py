@@ -50,11 +50,15 @@ def create_auth_chain_c(method):
 def create_auth_chain_d(method):
     return auth_chain_d(method)
 
+def create_auth_chain_e(method):
+    return auth_chain_e(method)
+
 obfs_map = {
     'auth_chain_a': (create_auth_chain_a,),
     'auth_chain_b': (create_auth_chain_b,),
     'auth_chain_c': (create_auth_chain_c,),
     'auth_chain_d': (create_auth_chain_d,),
+    'auth_chain_e': (create_auth_chain_e,),
 }
 
 class xorshift128plus(object):
@@ -742,7 +746,6 @@ class auth_chain_c(auth_chain_b):
         final_pos = pos + random.next() % (len(self.data_size_list0) - pos)
         return self.data_size_list0[final_pos] - other_data_size
 
-
 class auth_chain_d(auth_chain_b):
     def __init__(self, method):
         super(auth_chain_d, self).__init__(method)
@@ -787,3 +790,17 @@ class auth_chain_d(auth_chain_b):
         pos = bisect.bisect_left(self.data_size_list0, other_data_size)
         final_pos = pos + random.next() % (len(self.data_size_list0) - pos)
         return self.data_size_list0[final_pos] - other_data_size
+
+class auth_chain_e(auth_chain_d):
+    def __init__(self, method):
+        super(auth_chain_d, self).__init__(method)
+        self.salt = b"auth_chain_e"
+        self.no_compatible_method = 'auth_chain_e'
+
+    def rnd_data_len(self, buf_size, last_hash, random):
+        other_data_size = buf_size + self.server_info.overhead
+        if other_data_size >= self.data_size_list0[-1]:
+            return 0
+
+        pos = bisect.bisect_left(self.data_size_list0, other_data_size)
+        return self.data_size_list0[pos] - other_data_size
