@@ -8,7 +8,7 @@ MYSQL_PORT = port
 MYSQL_USER = 'user'
 MYSQL_PASS = 'pass'
 MYSQL_DB = 'db'
-MYSQL_UPDATE_TIME = 300
+MYSQL_UPDATE_TIME = 180
 
 # NODE INFO , value =  True or False
 PRO_NODE = False
@@ -26,4 +26,4 @@ MANAGE_PASS = 'pass'
 #if you want manage in other server you should set this value to global ip
 MANAGE_BIND_IP = '127.0.0.1'
 #make sure this port is idle
-MANAGE_PORT = port
+MANAGE_PORT = 10086

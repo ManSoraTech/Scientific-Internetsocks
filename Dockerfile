@@ -1,31 +1,30 @@
-FROM alpine:3.6
+FROM alpine:edge
 
-ENV SERVER_ADDR     0.0.0.0
-ENV SERVER_PORT     51348
-ENV PASSWORD        psw
-ENV METHOD          aes-128-ctr
-ENV PROTOCOL        auth_aes128_md5
-ENV PROTOCOLPARAM   32
-ENV OBFS            tls1.2_ticket_auth_compatible
-ENV TIMEOUT         300
-ENV DNS_ADDR        8.8.8.8
-ENV DNS_ADDR_2      8.8.4.4
-
-ARG BRANCH=manyuser
 ARG WORK=~
 
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 
 RUN apk --no-cache add python \
+    py-pip \
+    py-m2crypto \
     libsodium \
-    wget
+    git
 
+RUN pip install cymysql
 
 RUN mkdir -p $WORK && \
-    wget -qO- --no-check-certificate https://github.com/shadowsocksr/shadowsocksr/archive/$BRANCH.tar.gz | tar -xzf - -C $WORK
+    git clone -b manyuser https://gitlab.com/ManSora/Scientific-Internetsocks.git $WORK/shadowsocks
 
+RUN cp $WORK/shadowsocks/Config.simple.py $WORK/shadowsocks/Config.py && \
+    sed -ri "s@^(MYSQL_HOST = ).*@\1'$MYSQL_HOST'@" $WORK/shadowsocks/Config.py && \
+    sed -ri "s@^(MYSQL_PORT = ).*@\1$MYSQL_PORT@" $WORK/shadowsocks/Config.py && \
+    sed -ri "s@^(MYSQL_USER = ).*@\1'$MYSQL_USER'@" $WORK/shadowsocks/Config.py && \
+    sed -ri "s@^(MYSQL_PASS = ).*@\1'$MYSQL_PASSWORD'@" $WORK/shadowsocks/Config.py && \
+    sed -ri "s@^(MYSQL_DB = ).*@\1'$MYSQL_DBNAME'@" $WORK/shadowsocks/Config.py
 
-WORKDIR $WORK/shadowsocksr-$BRANCH/shadowsocks
+RUN cp $WORK/shadowsocks/config.json $WORK/shadowsocks/user-config.json && \
+    sed -ri "s@^(.*\"node_name\": ).*@\1\"$NODE_NAME\",@" $WORK/shadowsocks/user-config.json
 
+WORKDIR $WORK/shadowsocks
 
-EXPOSE $SERVER_PORT
-CMD python server.py -p $SERVER_PORT -k $PASSWORD -m $METHOD -O $PROTOCOL -o $OBFS -G $PROTOCOLPARAM
+CMD python server.py
