@@ -1,5 +1,7 @@
 #!/bin/bash
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
+normal=$(tput sgr0)
+bold=$(tput bold)
 Info="${Green_font_prefix}[信息]${Font_color_suffix}"
 Error="${Red_font_prefix}[错误]${Font_color_suffix}"
 
@@ -76,8 +78,11 @@ check_kernel(){
 		echo -e "${Info} 您目前使用的是 Kernel 4.16, 将开启 BBR."
 		set_bbr
 	else
-		echo -e "${Error} 当前 Kernel 不支持锐速以及 BBR. 尝试安装 Kernel."
-		install_kernel
+		echo -e "${Error} 当前 Kernel 不支持锐速以及 BBR. 是否尝试安装 Kernel ? [${bold}yes${normal}/no]"
+		user_input "yes" "no" "y" "n"
+                if [[ $answer == yes ]] || [[ $answer == y ]];then
+			install_kernel
+		fi
 	fi
 }
 
