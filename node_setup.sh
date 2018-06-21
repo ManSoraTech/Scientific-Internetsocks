@@ -197,6 +197,7 @@ set_ssr_docker(){
 	--ulimit nofile=98304:98304 \
 	--net=host \
 	--restart=on-failure \
+	-v /etc/localtime:/etc/localtime:ro \
 	mansora/ssr-node:latest
 }
 
