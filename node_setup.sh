@@ -72,15 +72,15 @@ check_sys(){
 check_kernel(){
 	kernel_version=`uname -r`
 	if [[ ${kernel_version} == "3.10.0-327.el7.x86_64" ]]; then
-		echo -e "${Info} 您目前使用的 Kernel 可使用锐速."
+		echo -e "${Info} 您目前使用的 Kernel ${kernel_version} 可使用锐速."
 		set_appex
 	elif [[ ${kernel_version} == 4.15* ]] || [[ ${kernel_version} == 4.16* ]]; then
-		echo -e "${Info} 您目前使用的是 Kernel 4.16, 将开启 BBR."
+		echo -e "${Info} 您目前使用的是 Kernel ${kernel_version}, 将开启 BBR."
 		set_bbr
 	else
-		echo -e "${Error} 当前 Kernel 不支持锐速以及 BBR. 是否尝试安装 Kernel ? [${bold}yes${normal}/no]"
+		echo -e "${Error} 当前 Kernel ${kernel_version} 不支持锐速以及 BBR. 是否尝试安装 Kernel ? [${bold}yes${normal}/no]"
 		user_input "yes" "no" "y" "n"
-                if [[ $answer == yes ]] || [[ $answer == y ]];then
+		if [[ $answer == yes ]] || [[ $answer == y ]]; then
 			install_kernel
 		fi
 	fi
