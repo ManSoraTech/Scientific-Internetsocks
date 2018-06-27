@@ -88,7 +88,7 @@ check_kernel(){
 
 install_kernel(){
 	if [[ ${release} == "centos" ]]; then
-		wget --no-check-certificate -qO /tmp/kernel-3.10.0-327.el7.x86_64.rpm https://files.ime.moe/Linux/Kernel/CentOS/7/kernel-3.10.0-327.el7.x86_64.rpm
+		wget --no-check-certificate -qO /tmp/kernel-3.10.0-327.el7.x86_64.rpm https://raw.githubusercontent.com/ManSoraTech/Scientific-Internetsocks/manyuser/kernel/centos/7/kernel-3.10.0-327.el7.x86_64.rpm
 		yum install -y /tmp/kernel-3.10.0-327.el7.x86_64.rpm
 		echo -e "${Info} Kernel 安装完成, 请重启机器."
 		exit 1
