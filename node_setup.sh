@@ -154,14 +154,14 @@ install_docker_ce(){
 		elif [[ ${release} == "debian" ]]; then
 			apt-get remove -y docker docker-engine docker.io
 			apt-get install -y apt-transport-https ca-certificates gnupg2 software-properties-common
-			curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+			curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
 			add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
 			apt-get install -y docker-ce
 			systemctl enable docker
 			systemctl start docker
 		elif [[ ${release} == "ubuntu" ]]; then
 			apt-get install -y apt-transport-https ca-certificates software-properties-common
-			curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+			curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 			add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 			apt-get install -y docker-ce
 			systemctl enable docker
@@ -262,13 +262,21 @@ set_bbr(){
 
 set_appex(){
 	if [ ! -d "/appex" ]; then
-		wget --no-check-certificate -qO /tmp/appex.sh "https://raw.githubusercontent.com/0oVicero0/serverSpeeder_Install/master/appex.sh" && bash /tmp/appex.sh 'install'
+		wget --no-check-certificate -qO /tmp/appex.sh "https://raw.githubusercontent.com/0oVicero0/serverSpeeder_Install/master/appex.sh"
+		chmod +x /tmp/appex.sh
+		/tmp/appex.sh 'install'
 		sed -i "s/initialCwndWan=\"22\"/initialCwndWan=\"45\"/" /appex/etc/config
 		sed -i "s/l2wQLimit=\"256 2048\"/l2wQLimit=\"2560 20480\"/" /appex/etc/config
 		sed -i "s/w2lQLimit=\"256 2048\"/w2lQLimit=\"2560 20480\"/" /appex/etc/config
 		sed -i "s/engineNum=\"0\"/engineNum=\"1\"/" /appex/etc/config
 		/appex/bin/serverSpeeder.sh restart
 	fi
+}
+
+install_netdata(){
+	wget --no-check-certificate -qO /tmp/kickstart.sh https://my-netdata.io/kickstart.sh
+	chmod +x /tmp/kickstart.sh
+	/tmp/kickstart.sh
 }
 
 check_root
@@ -283,6 +291,8 @@ set_ssr_env
 install_docker_ce
 echo -e "${Info} 正在设置 Docker."
 set_ssr_docker
+echo -e "${Info} 正在安装 netdata."
+install_netdata
 echo -e "${Info} 正在设置 防火墙."
 set_iptables
 echo -e "${Info} 配置结束, 请通过${Green_background_prefix} docker logs Shadowsocks -f ${Font_color_suffix}来查看 SSR 运行日志."
