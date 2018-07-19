@@ -74,7 +74,7 @@ check_kernel(){
 	if [[ ${kernel_version} == "3.10.0-327.el7.x86_64" ]]; then
 		echo -e "${Info} 您目前使用的 Kernel ${kernel_version} 可使用锐速."
 		set_appex
-	elif [[ ${kernel_version} == 4.15* ]] || [[ ${kernel_version} == 4.16* ]]; then
+	elif [[ ${kernel_version} == 4.15* ]] || [[ ${kernel_version} == 4.16* ]] || [[ ${kernel_version} == 4.17*]] [[ ${kernel_version} == 4.18*]]; then
 		echo -e "${Info} 您目前使用的是 Kernel ${kernel_version}, 将开启 BBR."
 		set_bbr
 	else
@@ -87,14 +87,31 @@ check_kernel(){
 }
 
 install_kernel(){
-	if [[ ${release} == "centos" ]]; then
-		wget --no-check-certificate -qO /tmp/kernel-3.10.0-327.el7.x86_64.rpm https://raw.githubusercontent.com/ManSoraTech/Scientific-Internetsocks/manyuser/kernel/centos/7/kernel-3.10.0-327.el7.x86_64.rpm
-		yum install -y /tmp/kernel-3.10.0-327.el7.x86_64.rpm
-		echo -e "${Info} Kernel 安装完成, 请重启机器."
-		exit 1
-	else
-		echo -e "${Error} 暂时只支持 CentOS7 安装 Kernel."
-		exit 1
+	echo -e "${Info} 您需要安装 锐速内核(appex) 或 BBR内核(bbr)? [bbr/appex]"
+	user_input "bbr" "appex"
+	if [[ $answer == bbr ]]; then
+		if [[ ${release} == "centos" ]]; then
+			wget --no-check-certificate -qO /tmp/elrepo-release-7.0-3.el7.elrepo.noarch.rpm http://elrepo.reloumirrors.net/elrepo/el7/x86_64/RPMS/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
+			yum install -y /tmp/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
+			yum --enablerepo=elrepo-kernel install -y kernel-ml
+			echo -e "${Info} Kernel 安装完成, 请重启机器."
+			exit 1
+		else
+			echo -e "${Error} 暂时只支持 CentOS7 安装 Kernel."
+			exit 1
+		fi
+	fi
+
+	if [[ $answer == appex ]]; then
+		if [[ ${release} == "centos" ]]; then
+			wget --no-check-certificate -qO /tmp/kernel-3.10.0-327.el7.x86_64.rpm https://raw.githubusercontent.com/ManSoraTech/Scientific-Internetsocks/manyuser/kernel/centos/7/kernel-3.10.0-327.el7.x86_64.rpm
+			yum install -y /tmp/kernel-3.10.0-327.el7.x86_64.rpm
+			echo -e "${Info} Kernel 安装完成, 请重启机器."
+			exit 1
+		else
+			echo -e "${Error} 暂时只支持 CentOS7 安装 Kernel."
+			exit 1
+		fi
 	fi
 }
 
@@ -244,19 +261,20 @@ optimize(){
 }
 
 set_bbr(){
-	wget --no-check-certificate -qO /tmp/Makefile https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Makefile
+#	wget --no-check-certificate -qO /tmp/Makefile https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Makefile
 
-	if [[ ${kernel_version} == 4.15* ]]; then
-		wget --no-check-certificate -qO /tmp/tcp_nanqinlang-test.c https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Kernel_4.15/tcp_nanqinlang-test.c
-	elif [[ ${kernel_version} == 4.16* ]]; then
-		wget --no-check-certificate -qO /tmp/tcp_nanqinlang-test.c https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Kernel_4.16/tcp_nanqinlang-test.c
-	fi
+#	if [[ ${kernel_version} == 4.15* ]]; then
+#		wget --no-check-certificate -qO /tmp/tcp_nanqinlang-test.c https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Kernel_4.15/tcp_nanqinlang-test.c
+#	elif [[ ${kernel_version} == 4.16* ]]; then
+#		wget --no-check-certificate -qO /tmp/tcp_nanqinlang-test.c https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Kernel_4.16/tcp_nanqinlang-test.c
+#	fi
 
-	cd /tmp/
-	make
-	make install
-	cd ~
-	echo -e "\nnet.core.default_qdisc = fq\nnet.ipv4.tcp_congestion_control = nanqinlang-test\n" >> /etc/sysctl.d/10-custom.conf
+#	cd /tmp/
+#	make
+#	make install
+#	cd ~
+#	echo -e "\nnet.core.default_qdisc = fq\nnet.ipv4.tcp_congestion_control = nanqinlang-test\n" >> /etc/sysctl.d/10-custom.conf
+	echo -e "\nnet.core.default_qdisc = fq\nnet.ipv4.tcp_congestion_control = bbr\n" >> /etc/sysctl.d/10-custom.conf
 	sysctl -q --system -p
 }
 
