@@ -91,9 +91,11 @@ install_kernel(){
 	user_input "bbr" "appex"
 	if [[ $answer == bbr ]]; then
 		if [[ ${release} == "centos" ]]; then
+			echo "GRUB_DEFAULT=0" >> /etc/default/grub
 			wget --no-check-certificate -qO /tmp/elrepo-release-7.0-3.el7.elrepo.noarch.rpm http://elrepo.reloumirrors.net/elrepo/el7/x86_64/RPMS/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
 			yum install -y /tmp/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
 			yum --enablerepo=elrepo-kernel install -y kernel-ml
+			grub2-set-default 0
 			echo -e "${Info} Kernel 安装完成, 请重启机器."
 			exit 1
 		else
