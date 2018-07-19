@@ -74,7 +74,7 @@ check_kernel(){
 	if [[ ${kernel_version} == "3.10.0-327.el7.x86_64" ]]; then
 		echo -e "${Info} 您目前使用的 Kernel ${kernel_version} 可使用锐速."
 		set_appex
-	elif [[ ${kernel_version} == 4.15* ]] || [[ ${kernel_version} == 4.16* ]] || [[ ${kernel_version} == 4.17*]] [[ ${kernel_version} == 4.18*]]; then
+	elif [[ ${kernel_version} == 4.1* ]]; then
 		echo -e "${Info} 您目前使用的是 Kernel ${kernel_version}, 将开启 BBR."
 		set_bbr
 	else
