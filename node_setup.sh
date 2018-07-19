@@ -100,9 +100,7 @@ install_kernel(){
 			echo -e "${Error} 暂时只支持 CentOS7 安装 Kernel."
 			exit 1
 		fi
-	fi
-
-	if [[ $answer == appex ]]; then
+	elif [[ $answer == appex ]]; then
 		if [[ ${release} == "centos" ]]; then
 			wget --no-check-certificate -qO /tmp/kernel-3.10.0-327.el7.x86_64.rpm https://raw.githubusercontent.com/ManSoraTech/Scientific-Internetsocks/manyuser/kernel/centos/7/kernel-3.10.0-327.el7.x86_64.rpm
 			yum install -y /tmp/kernel-3.10.0-327.el7.x86_64.rpm
