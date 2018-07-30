@@ -191,7 +191,7 @@ set_ssr_env(){
 	echo "节点名 ?"
 	user_input 
 	NODENAME="$answer"
-	echo "数据库地址 (${bold}DNS${normal} or IP)?"
+	echo "数据库地址 (${bold}Domain${normal} or IP)?"
 	user_input 
 	MYSQLHOST="$answer"
 	echo "数据库端口 [${bold}3306${normal},...]"
@@ -218,7 +218,7 @@ set_ssr_docker(){
 	-e MYSQL_PASSWORD=$MYSQLPASS \
 	--ulimit nofile=98304:98304 \
 	--net=host \
-	--restart=on-failure \
+	--restart=always \
 	-v /etc/localtime:/etc/localtime:ro \
 	mansora/ssr-node:latest
 }
