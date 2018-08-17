@@ -98,8 +98,16 @@ install_kernel(){
 			grub2-set-default 0
 			echo -e "${Info} Kernel 安装完成, 请重启机器."
 			exit 1
+		elif [[ ${release} == "debian" ]]; then
+			cp /etc/apt/sources.list{,.bak}
+			sed -i -e 's/ \(stable\|wheezy\|stretch\|buster\)/ testing/ig' /etc/apt/sources.list
+			apt-get update
+			apt-get --download-only dist-upgrade
+			apt-get -y dist-upgrade
+			echo -e "${Info} Kernel 升级完成, 请重启机器."
+			exit 1
 		else
-			echo -e "${Error} 暂时只支持 CentOS7 安装 Kernel."
+			echo -e "${Error} 暂时只支持 CentOS7 以及 Debian 安装 Kernel."
 			exit 1
 		fi
 	elif [[ $answer == appex ]]; then
@@ -253,7 +261,9 @@ optimize(){
 		setenforce 0
 		sed -i '/SELINUX/s/enforcing/disabled/' /etc/selinux/config
 	fi
+
 	rm -rf /etc/security/limits.d/* 
+	rm -rf /etc/sysctl.d/*
 	echo -e "*    soft    nofile    1024000\n*    hard    nofile    1024000" > /etc/security/limits.conf
 	echo -e "fs.file-max = 1024000\nvm.swappiness = 100\nnet.core.rmem_max = 67108864\nnet.core.wmem_max = 67108864\nnet.core.netdev_max_backlog = 250000\nnet.core.somaxconn = 65535\nnet.nf_conntrack_max = 655350\nnet.netfilter.nf_conntrack_helper = 1\nnet.netfilter.nf_conntrack_acct = 1\nnet.netfilter.nf_conntrack_checksum = 1\nnet.netfilter.nf_conntrack_max = 655350\nnet.netfilter.nf_conntrack_tcp_timeout_established = 7440\nnet.netfilter.nf_conntrack_udp_timeout = 60\nnet.netfilter.nf_conntrack_udp_timeout_stream = 180\nnet.ipv4.ip_forward = 1\nnet.ipv4.ip_no_pmtu_disc = 1\nnet.ipv4.conf.default.arp_ignore = 1\nnet.ipv4.conf.all.arp_ignore = 1\nnet.ipv4.conf.all.proxy_arp = 1\nnet.ipv4.icmp_echo_ignore_broadcasts = 1\nnet.ipv4.icmp_ignore_bogus_error_responses = 1\nnet.ipv4.igmp_max_memberships = 100\nnet.ipv6.conf.default.forwarding = 1\nnet.ipv6.conf.all.forwarding = 1\nnet.ipv6.conf.all.disable_ipv6 = 0\nnet.ipv6.conf.all.use_tempaddr = 2\nnet.ipv6.conf.default.use_tempaddr = 2\nnet.ipv6.conf.eth0.use_tempaddr = 2\nnet.ipv6.conf.eth0.temp_prefered_lft = 3600\nnet.ipv6.conf.eth0.temp_valid_lft = 7200\nnet.ipv6.conf.eth0.max_addresses = 26\nnet.ipv4.tcp_syncookies = 1\nnet.ipv4.tcp_tw_reuse = 1\nnet.ipv4.tcp_tw_recycle = 0\nnet.ipv4.tcp_synack_retries = 2\nnet.ipv4.tcp_syn_retries = 2\nnet.ipv4.tcp_slow_start_after_idle 0\nnet.ipv4.tcp_window_scaling = 1\nnet.ipv4.tcp_timestamps = 1\nnet.ipv4.tcp_sack = 1\nnet.ipv4.tcp_dsack = 1\nnet.ipv4.tcp_fack = 1\nnet.ipv4.tcp_mtu_probing = 1\nnet.ipv4.tcp_fin_timeout = 30\nnet.ipv4.tcp_keepalive_time = 1200\nnet.ipv4.ip_local_port_range = 9000 65535\nnet.ipv4.tcp_max_syn_backlog = 8192\nnet.ipv4.tcp_max_tw_buckets = 5000\nnet.ipv4.tcp_max_orphans = 131072\nnet.ipv4.tcp_fastopen = 3\nnet.ipv4.tcp_fastopen_blackhole_timeout_sec = 0\nnet.ipv4.tcp_mem = 25600 51200 102400\nnet.ipv4.tcp_rmem = 4096 87380 67108864\nnet.ipv4.tcp_wmem = 4096 65536 67108864" > /etc/sysctl.d/10-custom.conf
 	sysctl -q --system -p
@@ -263,20 +273,28 @@ optimize(){
 }
 
 set_bbr(){
-#	wget --no-check-certificate -qO /tmp/Makefile https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Makefile
+	echo -e "${Info} 您需要安装 原版 BBR 或 魔改 BBR? [origin/nanqinlang]"
+	user_input "origin" "nanqinlang"
+	if [[ $answer == origin ]]; then
+		echo -e "\nnet.core.default_qdisc = fq\nnet.ipv4.tcp_congestion_control = bbr\n" >> /etc/sysctl.d/10-custom.conf
+	elif [[ $answer == nanqinlang ]]; then
+		wget --no-check-certificate -qO /tmp/Makefile https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Makefile
 
-#	if [[ ${kernel_version} == 4.15* ]]; then
-#		wget --no-check-certificate -qO /tmp/tcp_nanqinlang-test.c https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Kernel_4.15/tcp_nanqinlang-test.c
-#	elif [[ ${kernel_version} == 4.16* ]]; then
-#		wget --no-check-certificate -qO /tmp/tcp_nanqinlang-test.c https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Kernel_4.16/tcp_nanqinlang-test.c
-#	fi
+		if [[ ${kernel_version} == 4.15* ]]; then
+			wget --no-check-certificate -qO /tmp/tcp_nanqinlang-test.c https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Kernel_4.15/tcp_nanqinlang-test.c
+		elif [[ ${kernel_version} == 4.16* ]]; then
+			wget --no-check-certificate -qO /tmp/tcp_nanqinlang-test.c https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Kernel_4.16/tcp_nanqinlang-test.c
+		elif [[ ${kernel_version} == 4.17* ]]; then
+			wget --no-check-certificate -qO /tmp/tcp_nanqinlang-test.c https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Kernel_4.17/tcp_nanqinlang-test.c
+		fi
 
-#	cd /tmp/
-#	make
-#	make install
-#	cd ~
-#	echo -e "\nnet.core.default_qdisc = fq\nnet.ipv4.tcp_congestion_control = nanqinlang-test\n" >> /etc/sysctl.d/10-custom.conf
-	echo -e "\nnet.core.default_qdisc = fq\nnet.ipv4.tcp_congestion_control = bbr\n" >> /etc/sysctl.d/10-custom.conf
+		cd /tmp/
+		make
+		make install
+		cd ~
+		echo -e "\nnet.core.default_qdisc = fq\nnet.ipv4.tcp_congestion_control = nanqinlang-test\n" >> /etc/sysctl.d/10-custom.conf
+	fi
+
 	sysctl -q --system -p
 }
 
