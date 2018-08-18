@@ -100,10 +100,11 @@ install_kernel(){
 			exit 1
 		elif [[ ${release} == "debian" ]]; then
 			cp /etc/apt/sources.list{,.bak}
-			sed -i -e 's/ \(stable\|wheezy\|stretch\|buster\)/ testing/ig' /etc/apt/sources.list
+			sed -i -e 's/ \(stable\|jessie\|stretch\)/ buster/ig' /etc/apt/sources.list
 			apt-get update
 			apt-get --download-only dist-upgrade
 			apt-get -y dist-upgrade
+			apt-get -y install linux-headers-amd64
 			echo -e "${Info} Kernel 升级完成, 请重启机器."
 			exit 1
 		else
