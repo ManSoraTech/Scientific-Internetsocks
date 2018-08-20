@@ -199,22 +199,31 @@ install_docker_ce(){
 }
 
 set_ssr_env(){
-	echo "节点名 ?"
+	echo "节点名"
 	user_input 
 	NODENAME="$answer"
-	echo "数据库地址 (${bold}Domain${normal} or IP)?"
+	echo "限制用户客户端数 [${bold}20${normal},...]"
+	user_input 20 _NUM
+	PROTOCOLPARAM="$answer"
+	echo "单连接限速 [${bold}0${normal},...](KB)"
+	user_input 0 _NUM
+	SPEEDLIMITPERCON="$answer"
+	echo "单用户限速 [${bold}0${normal},...](KB)"
+	user_input 0 _NUM
+	SPEEDLIMITPERUSER="$answer"
+	echo "数据库地址 [${bold}Domain${normal} or IP]"
 	user_input 
 	MYSQLHOST="$answer"
 	echo "数据库端口 [${bold}3306${normal},...]"
 	user_input 3306 _NUM
 	MYSQLPORT="$answer"
-	echo "数据库名 ?"
+	echo "数据库名"
 	user_input 
 	MYSQLDB="$answer"
-	echo "数据库用户 ?"
+	echo "数据库用户"
 	user_input 
 	MYSQLUSER="$answer"
-	echo "数据库密码 ?"
+	echo "数据库密码"
 	user_input 
 	MYSQLPASS="$answer"
 }
@@ -222,6 +231,9 @@ set_ssr_env(){
 set_ssr_docker(){
 	docker run -d --name=Shadowsocks \
 	-e NODE_NAME=$NODENAME \
+	-e PROTOCOL_PARAM=$PROTOCOLPARAM \
+	-e SPEED_LIMIT_PER_CON=$SPEEDLIMITPERCON \
+	-e SPEED_LIMIT_PER_USER=$SPEEDLIMITPERUSER \
 	-e MYSQL_HOST=$MYSQLHOST \
 	-e MYSQL_PORT=$MYSQLPORT \
 	-e MYSQL_USER=$MYSQLUSER \
