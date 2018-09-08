@@ -1,0 +1,109 @@
+#!/bin/bash
+Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
+normal=$(tput sgr0)
+bold=$(tput bold)
+Info="${Green_font_prefix}[信息]${Font_color_suffix}"
+Error="${Red_font_prefix}[错误]${Font_color_suffix}"
+
+user_input (){
+	args="${@:2}"
+	while [ true ]; do
+		answer=""
+		printf "~> "
+
+		if [ "$1" ]; then
+			args="${@:1}"
+			read answer
+			if [ "$answer" == "" ]; then
+				answer=$1
+				echo -en "\033[1A\033[2K"
+				echo "~> $1"
+				break
+			fi
+		else
+			while [ true ]; do
+				read answer
+				if [ "$answer" == "" ]; then
+					echo "${bold}输入无效!${normal}"
+					printf "~> "
+				else
+					break
+				fi
+			done
+		fi
+
+		if [ "$2" ]; then
+			for arg in $args; do
+				if [ "$arg" == "_NUM" ] && [ "${answer##*[!0-9]*}" ]; then
+					break 2
+				elif [ "${arg,,}" == "${answer,,}" ]; then
+					break 2
+				fi
+			done
+			echo "${bold}输入无效!${normal}"
+		else
+			break
+		fi
+	done
+}
+
+check_root(){
+	[[ $EUID != 0 ]] && echo -e "${Error} 当前账号非 ROOT (或没有 ROOT 权限), 无法继续操作, 请使用${Green_background_prefix} sudo su ${Font_color_suffix}来获取临时 ROOT 权限 (执行后会提示输入当前账号的密码)." && exit 1
+}
+
+set_ssr_env(){
+	echo "节点名"
+	user_input 
+	NODENAME="$answer"
+	echo "限制用户客户端数 [${bold}20${normal},...]"
+	user_input 20 _NUM
+	PROTOCOLPARAM="$answer"
+	echo "单连接限速 [${bold}0${normal},...](KB)"
+	user_input 0 _NUM
+	SPEEDLIMITPERCON="$answer"
+	echo "单用户限速 [${bold}0${normal},...](KB)"
+	user_input 0 _NUM
+	SPEEDLIMITPERUSER="$answer"
+	echo "数据库地址 [${bold}Domain${normal} or IP]"
+	user_input 
+	MYSQLHOST="$answer"
+	echo "数据库端口 [${bold}3306${normal},...]"
+	user_input 3306 _NUM
+	MYSQLPORT="$answer"
+	echo "数据库名"
+	user_input 
+	MYSQLDB="$answer"
+	echo "数据库用户"
+	user_input 
+	MYSQLUSER="$answer"
+	echo "数据库密码"
+	user_input 
+	MYSQLPASS="$answer"
+}
+
+set_ssr_docker(){
+	docker run -d --name=Shadowsocks \
+	-e NODE_NAME=$NODENAME \
+	-e PROTOCOL_PARAM=$PROTOCOLPARAM \
+	-e SPEED_LIMIT_PER_CON=$SPEEDLIMITPERCON \
+	-e SPEED_LIMIT_PER_USER=$SPEEDLIMITPERUSER \
+	-e MYSQL_HOST=$MYSQLHOST \
+	-e MYSQL_PORT=$MYSQLPORT \
+	-e MYSQL_USER=$MYSQLUSER \
+	-e MYSQL_DBNAME=$MYSQLDB \
+	-e MYSQL_PASSWORD=$MYSQLPASS \
+	--ulimit nofile=98304:98304 \
+	--net=host \
+	--restart=always \
+	-v /etc/localtime:/etc/localtime:ro \
+	mansora/ssr-node:latest
+}
+
+check_root
+docker stop Shadowsocks
+docker container rm Shadowsocks
+echo -e "${Info} 请填写服务端参数."
+set_ssr_env
+echo -e "${Info} 正在设置 Docker."
+set_ssr_docker
+echo -e "${Info} 配置结束, 请通过${Green_background_prefix} docker logs Shadowsocks -f ${Font_color_suffix}来查看 SSR 运行日志."

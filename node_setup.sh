@@ -263,8 +263,8 @@ set_iptables(){
 		apt-get install -y iptables-persistent
 		iptables -F
 		ip6tables -F
-		iptables-save >/etc/iptables/rules.v4
-		ip6tables-save >/etc/iptables/rules.v6
+		iptables-save > /etc/iptables/rules.v4
+		ip6tables-save > /etc/iptables/rules.v6
 	fi
 }
 
@@ -289,7 +289,7 @@ set_bbr(){
 	echo -e "${Info} 您需要安装 原版 BBR 或 魔改 BBR? [origin/nanqinlang]"
 	user_input "origin" "nanqinlang"
 	if [[ $answer == origin ]]; then
-		echo -e "\nnet.core.default_qdisc = fq\nnet.ipv4.tcp_congestion_control = bbr\n" >> /etc/sysctl.d/10-custom.conf
+		echo -e "\nnet.core.default_qdisc = fq\nnet.ipv4.tcp_congestion_control = bbr\n" > /etc/sysctl.d/99-bbr.conf
 	elif [[ $answer == nanqinlang ]]; then
 		wget --no-check-certificate -qO /tmp/Makefile https://raw.githubusercontent.com/Love4Taylor/tcp_nanqinlang-test/master/Makefile
 
@@ -305,7 +305,7 @@ set_bbr(){
 		make
 		make install
 		cd ~
-		echo -e "\nnet.core.default_qdisc = fq\nnet.ipv4.tcp_congestion_control = nanqinlang-test\n" >> /etc/sysctl.d/10-custom.conf
+		echo -e "\nnet.core.default_qdisc = fq\nnet.ipv4.tcp_congestion_control = nanqinlang-test\n" > /etc/sysctl.d/99-bbr.conf
 	fi
 
 	sysctl -q --system -p
@@ -336,6 +336,8 @@ check_sys
 optimize
 echo -e "${Info} 正在检查所需命令."
 check_cmd
+wget --no-check-certificate -qO /bin/reset_ss https://raw.githubusercontent.com/ManSoraTech/Scientific-Internetsocks/manyuser/reset_ss
+chmod +x /bin/reset_ss
 check_kernel
 echo -e "${Info} 请填写服务端参数."
 set_ssr_env
