@@ -102,7 +102,7 @@ install_kernel(){
 			cp /etc/apt/sources.list{,.bak}
 			sed -i -e 's/ \(stable\|jessie\|stretch\)/ buster/ig' /etc/apt/sources.list
 			apt-get update
-			apt-get --download-only dist-upgrade
+			apt-get --download-only -y dist-upgrade
 			apt-get -y dist-upgrade
 			apt-get -y install linux-headers-amd64
 			echo -e "${Info} Kernel 升级完成, 请重启机器."
@@ -278,7 +278,7 @@ optimize(){
 	rm -rf /etc/security/limits.d/* 
 	rm -rf /etc/sysctl.d/*
 	echo -e "*    soft    nofile    1024000\n*    hard    nofile    1024000" > /etc/security/limits.conf
-	echo -e "fs.file-max = 1024000\nvm.swappiness = 100\nnet.core.somaxconn = 32768\nnet.netfilter.nf_conntrack_helper = 1\nnet.netfilter.nf_conntrack_acct = 1\nnet.netfilter.nf_conntrack_checksum = 1\nnet.netfilter.nf_conntrack_max = 655350\nnet.ipv4.ip_forward = 1\nnet.ipv4.ip_no_pmtu_disc = 1\nnet.ipv4.conf.default.arp_ignore = 1\nnet.ipv4.conf.default.proxy_arp = 1\nnet.ipv4.icmp_echo_ignore_broadcasts = 1\nnet.ipv4.icmp_ignore_bogus_error_responses = 1\nnet.ipv6.conf.default.forwarding = 1\nnet.ipv6.conf.default.disable_ipv6 = 0\nnet.ipv6.conf.default.use_tempaddr = 2\nnet.ipv6.conf.default.temp_prefered_lft = 3600\nnet.ipv6.conf.default.temp_valid_lft 7200\nnet.ipv6.conf.default.max_addresses = 26\nnet.ipv4.tcp_syncookies = 1\nnet.ipv4.tcp_tw_reuse = 1\nnet.ipv4.tcp_tw_recycle = 0\nnet.ipv4.tcp_mtu_probing = 1\nnet.ipv4.tcp_fin_timeout = 30\nnet.ipv4.tcp_keepalive_time = 1200\nnet.ipv4.ip_local_port_range = 9000 65535\nnet.ipv4.tcp_fastopen = 3\nnet.ipv4.tcp_fastopen_blackhole_timeout_sec = 0\n" > /etc/sysctl.d/10-custom.conf
+	echo -e "fs.file-max = 1024000\nvm.swappiness = 100\nnet.core.somaxconn = 32768\nnet.netfilter.nf_conntrack_helper = 1\nnet.netfilter.nf_conntrack_acct = 1\nnet.netfilter.nf_conntrack_checksum = 1\nnet.netfilter.nf_conntrack_max = 655350\nnet.ipv4.ip_forward = 1\nnet.ipv4.ip_no_pmtu_disc = 1\nnet.ipv4.conf.default.arp_ignore = 1\nnet.ipv4.conf.default.proxy_arp = 1\nnet.ipv4.icmp_echo_ignore_broadcasts = 1\nnet.ipv4.icmp_ignore_bogus_error_responses = 1\nnet.ipv6.conf.default.forwarding = 1\nnet.ipv6.conf.default.disable_ipv6 = 0\nnet.ipv6.conf.default.use_tempaddr = 2\nnet.ipv6.conf.default.temp_prefered_lft = 3600\nnet.ipv6.conf.default.temp_valid_lft = 7200\nnet.ipv6.conf.default.max_addresses = 26\nnet.ipv4.tcp_syncookies = 1\nnet.ipv4.tcp_tw_reuse = 1\nnet.ipv4.tcp_tw_recycle = 0\nnet.ipv4.tcp_mtu_probing = 1\nnet.ipv4.tcp_fin_timeout = 30\nnet.ipv4.tcp_keepalive_time = 1200\nnet.ipv4.ip_local_port_range = 9000 65535\nnet.ipv4.tcp_fastopen = 3\nnet.ipv4.tcp_fastopen_blackhole_timeout_sec = 0\n" > /etc/sysctl.d/10-custom.conf
 	sysctl -q --system -p
 	sed -i 's/#Compress=yes/Compress=yes/' /etc/systemd/journald.conf
 	sed -i 's/#SystemMaxUse=/SystemMaxUse=5G/' /etc/systemd/journald.conf
