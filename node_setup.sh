@@ -104,7 +104,7 @@ install_kernel(){
 			apt-get update
 			apt-get --download-only -y dist-upgrade
 			apt-get -y dist-upgrade
-			apt-get -y install linux-headers-amd64
+			apt-get -y install linux-image-amd64 linux-headers-amd64
 			echo -e "${Info} Kernel 升级完成, 请重启机器."
 			exit 1
 		else
