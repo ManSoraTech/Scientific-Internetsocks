@@ -20,4 +20,6 @@ sed -ri "s@^(.*\"protocol_param\": ).*@\1\"$PROTOCOL_PARAM\",@" /shadowsocks/use
 sed -ri "s@^(.*\"speed_limit_per_con\": ).*@\1$SPEED_LIMIT_PER_CON,@" /shadowsocks/user-config.json
 sed -ri "s@^(.*\"speed_limit_per_user\": ).*@\1$SPEED_LIMIT_PER_USER,@" /shadowsocks/user-config.json
 
+echo $DOCKER_DNS > /shadowsocks/dns.conf
+
 exec python /shadowsocks/server.py m

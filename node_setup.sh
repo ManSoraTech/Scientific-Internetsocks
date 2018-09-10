@@ -226,6 +226,9 @@ set_ssr_env(){
 	echo "数据库密码"
 	user_input 
 	MYSQLPASS="$answer"
+	echo "Docker DNS [${bold}1.1.1.1${normal},...]"
+	user_input "1.1.1.1"
+	DOCKERDNS="$answer"
 }
 
 set_ssr_docker(){
@@ -239,6 +242,8 @@ set_ssr_docker(){
 	-e MYSQL_USER=$MYSQLUSER \
 	-e MYSQL_DBNAME=$MYSQLDB \
 	-e MYSQL_PASSWORD=$MYSQLPASS \
+	-e DOCKER_DNS=$DOCKERDNS \
+	--dns=$DOCKERDNS \
 	--ulimit nofile=98304:98304 \
 	--net=host \
 	--restart=always \
