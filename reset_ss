@@ -55,12 +55,12 @@ check_root(){
 
 update_reset_ss(){
 	if [ $VER != $VER_OL ]; then
-		echo "脚本需要更新, 正在更新..."
+		echo -e "${Info} 脚本需要更新, 正在更新"
 		wget --no-check-certificate -qO /bin/reset_ss https://raw.githubusercontent.com/ManSoraTech/Scientific-Internetsocks/manyuser/reset_ss
-		echo "更新完毕, 退出."
+		echo -e "${Info} 更新完毕, 退出"
 		exit 1
 	else
-		echo "脚本已是最新."
+		echo -e "${Info} 脚本已是最新"
 	fi
 }
 
