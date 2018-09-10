@@ -243,7 +243,8 @@ set_ssr_docker(){
 	-e MYSQL_DBNAME=$MYSQLDB \
 	-e MYSQL_PASSWORD=$MYSQLPASS \
 	-e DOCKER_DNS=$DOCKERDNS \
-	--dns=$DOCKERDNS \
+	--sysctl net.ipv6.conf.all.disable_ipv6=0 \
+	--dns="$DOCKERDNS" \
 	--ulimit nofile=98304:98304 \
 	--net=host \
 	--restart=always \

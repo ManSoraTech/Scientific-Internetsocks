@@ -1,4 +1,6 @@
 #!/bin/bash
+VER=201809101
+VER_OL=$(curl -k https://raw.githubusercontent.com/ManSoraTech/Scientific-Internetsocks/manyuser/reset_ss_ver)
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
 normal=$(tput sgr0)
 bold=$(tput bold)
@@ -51,6 +53,17 @@ check_root(){
 	[[ $EUID != 0 ]] && echo -e "${Error} 当前账号非 ROOT (或没有 ROOT 权限), 无法继续操作, 请使用${Green_background_prefix} sudo su ${Font_color_suffix}来获取临时 ROOT 权限 (执行后会提示输入当前账号的密码)." && exit 1
 }
 
+update_reset_ss(){
+	if [ $VER != $VER_OL ]; then
+		echo "脚本需要更新, 正在更新..."
+		wget --no-check-certificate -qO /bin/reset_ss https://raw.githubusercontent.com/ManSoraTech/Scientific-Internetsocks/manyuser/reset_ss
+		echo "更新完毕, 退出."
+		exit 1
+	else
+		echo "脚本已是最新."
+	fi
+}
+
 set_ssr_env(){
 	echo "节点名"
 	user_input 
@@ -96,7 +109,8 @@ set_ssr_docker(){
 	-e MYSQL_DBNAME=$MYSQLDB \
 	-e MYSQL_PASSWORD=$MYSQLPASS \
 	-e DOCKER_DNS=$DOCKERDNS \
-	--dns=$DOCKERDNS \
+	--sysctl net.ipv6.conf.all.disable_ipv6=0 \
+	--dns="$DOCKERDNS" \
 	--ulimit nofile=98304:98304 \
 	--net=host \
 	--restart=always \
@@ -105,8 +119,10 @@ set_ssr_docker(){
 }
 
 check_root
+update_reset_ss
 docker stop Shadowsocks
 docker container rm Shadowsocks
+docker image rm mansora/ssr-node
 echo -e "${Info} 请填写服务端参数."
 set_ssr_env
 echo -e "${Info} 正在设置 Docker."
