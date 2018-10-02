@@ -9,7 +9,7 @@ RUN apk --no-cache add python \
     git&& \
     pip install cymysql
 
-RUN git clone -b manyuser https://gitlab.com/ManSora/Scientific-Internetsocks.git shadowsocks
+RUN git clone -b manyuser https://github.com/ManSoraTech/Scientific-Internetsocks.git shadowsocks
 
 ENTRYPOINT ["/shadowsocks/docker_run.sh"]
  
