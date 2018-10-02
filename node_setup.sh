@@ -202,6 +202,12 @@ set_ssr_env(){
 	echo "节点名"
 	user_input 
 	NODENAME="$answer"
+	echo "TCP 超时时间 [${bold}7440${normal},...]"
+	user_input 7440 _NUM
+	TCPTIMEOUT="$answer"
+	echo "UDP 超时时间 [${bold}60${normal},...]"
+	user_input 60 _NUM
+	UDPTIMEOUT="$answer"
 	echo "限制用户客户端数 [${bold}20${normal},...]"
 	user_input 20 _NUM
 	PROTOCOLPARAM="$answer"
@@ -234,6 +240,8 @@ set_ssr_env(){
 set_ssr_docker(){
 	docker run -d --name=Shadowsocks \
 	-e NODE_NAME=$NODENAME \
+	-e TCP_TIMEOUT=$TCPTIMEOUT \
+	-e UDP_TIMEOUT=$UDPTIMEOUT \
 	-e PROTOCOL_PARAM=$PROTOCOLPARAM \
 	-e SPEED_LIMIT_PER_CON=$SPEEDLIMITPERCON \
 	-e SPEED_LIMIT_PER_USER=$SPEEDLIMITPERUSER \

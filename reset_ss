@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=201809101
+VER=201810031
 VER_OL=$(curl -k -s https://raw.githubusercontent.com/ManSoraTech/Scientific-Internetsocks/manyuser/reset_ss_ver)
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
 normal=$(tput sgr0)
@@ -57,6 +57,7 @@ update_reset_ss(){
 	if [ $VER != $VER_OL ]; then
 		echo -e "${Info} 脚本需要更新, 正在更新"
 		wget --no-check-certificate -qO /bin/reset_ss https://raw.githubusercontent.com/ManSoraTech/Scientific-Internetsocks/manyuser/reset_ss
+		chmod +x /bin/reset_ss
 		echo -e "${Info} 更新完毕, 退出"
 		exit 1
 	else
@@ -68,6 +69,12 @@ set_ssr_env(){
 	echo "节点名"
 	user_input 
 	NODENAME="$answer"
+	echo "TCP 超时时间 [${bold}7440${normal},...]"
+	user_input 7440 _NUM
+	TCPTIMEOUT="$answer"
+	echo "UDP 超时时间 [${bold}60${normal},...]"
+	user_input 60 _NUM
+	UDPTIMEOUT="$answer"
 	echo "限制用户客户端数 [${bold}20${normal},...]"
 	user_input 20 _NUM
 	PROTOCOLPARAM="$answer"
@@ -100,6 +107,8 @@ set_ssr_env(){
 set_ssr_docker(){
 	docker run -d --name=Shadowsocks \
 	-e NODE_NAME=$NODENAME \
+	-e TCP_TIMEOUT=$TCPTIMEOUT \
+	-e UDP_TIMEOUT=$UDPTIMEOUT \
 	-e PROTOCOL_PARAM=$PROTOCOLPARAM \
 	-e SPEED_LIMIT_PER_CON=$SPEEDLIMITPERCON \
 	-e SPEED_LIMIT_PER_USER=$SPEEDLIMITPERUSER \

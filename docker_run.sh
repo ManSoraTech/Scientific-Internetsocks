@@ -16,6 +16,8 @@ sed -ri "s@^(MYSQL_DB = ).*@\1'$MYSQL_DBNAME'@" /shadowsocks/Config.py
 
 cp /shadowsocks/config.json /shadowsocks/user-config.json
 sed -ri "s@^(.*\"node_name\": ).*@\1\"$NODE_NAME\",@" /shadowsocks/user-config.json
+sed -ri "s@^(.*\"timeout\": ).*@\1$TCP_TIMEOUT,@" /shadowsocks/user-config.json
+sed -ri "s@^(.*\"udp_timeout\": ).*@\1$UDP_TIMEOUT,@" /shadowsocks/user-config.json
 sed -ri "s@^(.*\"protocol_param\": ).*@\1\"$PROTOCOL_PARAM\",@" /shadowsocks/user-config.json
 sed -ri "s@^(.*\"speed_limit_per_con\": ).*@\1$SPEED_LIMIT_PER_CON,@" /shadowsocks/user-config.json
 sed -ri "s@^(.*\"speed_limit_per_user\": ).*@\1$SPEED_LIMIT_PER_USER,@" /shadowsocks/user-config.json
